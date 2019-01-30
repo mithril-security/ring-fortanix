@@ -43,6 +43,12 @@
 //!        with <code>llvm-ar-10</code> and <code>clang-10</code> in <code>$PATH</code>.
 //!        (Going forward more functionality should be enabled by default, without
 //!        requiring these hacks, and without requiring a C compiler.)
+//! <tr><td><code>force_std_detection</code>
+//!     <td>This is only applicable to x86. By default, <i>ring</i> will use
+//!         custom logic with the CPUID instruction to figure out which CPU
+//!         features are available. With this feature, the standard
+//!         <code>std::is_x86_feature_detected</code> macro will be used
+//!         instead.
 //! </table>
 
 #![doc(html_root_url = "https://briansmith.org/rustdoc/")]

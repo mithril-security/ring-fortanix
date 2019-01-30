@@ -22,6 +22,7 @@
 #[derive(Copy, Clone)]
 pub(crate) struct Features(());
 
+
 #[inline(always)]
 pub(crate) fn features() -> Features {
     // We don't do runtime feature detection on aarch64-apple-* as all AAarch64
@@ -39,11 +40,33 @@ pub(crate) fn features() -> Features {
         let () = INIT.call_once(|| {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
             {
-                extern "C" {
-                    fn GFp_cpuid_setup();
+                #[cfg(all(target_env = "sgx", target_vendor = "mesalock"))]
+                {
+                    // For SGX we initialize the cpuid through an OCALL with rsgx_cpuid
+                    extern "C" {
+                        static mut GFp_ia32cap_P: [u32; 4];
+                    }
+                    
+                    extern crate sgx_trts;
+                    use sgx_trts::cpuid::rsgx_cpuid;
+
+                    let [l1edx, l1ecx, l7ebx, l7ecx] = unsafe { &mut GFp_ia32cap_P };
+                    let [_, _, cpuid_l1ecx, cpuid_l1edx] = rsgx_cpuid(1).unwrap();
+                    let [_, cpuid_l7ebx, cpuid_l7ecx, _] = rsgx_cpuid(7).unwrap();
+                    *l1edx = cpuid_l1edx as u32;
+                    *l1ecx = cpuid_l1ecx as u32;
+                    *l7ebx = cpuid_l7ebx as u32;
+                    *l7ecx = cpuid_l7ecx as u32;
                 }
-                unsafe {
-                    GFp_cpuid_setup();
+
+                #[cfg(not(all(target_env = "sgx", target_vendor = "mesalock")))]
+                {
+                    extern "C" {
+                        fn GFp_cpuid_setup();
+                    }
+                    unsafe {
+                        GFp_cpuid_setup();
+                    }
                 }
             }
 
