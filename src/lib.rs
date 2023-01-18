@@ -50,7 +50,7 @@
 //!         <code>std::is_x86_feature_detected</code> macro will be used
 //!         instead.
 //! </table>
-
+#![allow(warnings)]
 #![doc(html_root_url = "https://briansmith.org/rustdoc/")]
 #![allow(
     clippy::collapsible_if,
